@@ -1,0 +1,20 @@
+@import url('https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap');
+@import "tailwindcss";
+
+@font-face {
+    font-family: helvetica-now;
+    src: url(../src/assets/fonts/HelveticaNowText-Light.ttf);
+}
+
+
+@font-face {
+    font-family: futura;
+    src: url(../src/assets/fonts/AG_Futura_Bold.ttf)
+}
+
+@theme {
+    --font-helvetica-light: helvetica-now, "sans-serif";
+    --font-ag-futura: futura, "sans-serif";
+    --font-raleway: "Raleway", sans-serif;
+}
+ 
