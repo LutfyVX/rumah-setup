@@ -1,6 +1,5 @@
 import React from 'react';
 import { useState } from 'react';
-import Navbar  from '../components/Navbar';
 import { Icon } from '@iconify/react';
 import { Link } from 'react-router-dom';
 
@@ -18,10 +17,6 @@ const Login = () => {
     return (
         <div className="">
 
-            {/* Navigation */}
-            <nav className="">
-           <Navbar/>
-            </nav>
 
             {/* Keyboard Image Banner */}
             <div

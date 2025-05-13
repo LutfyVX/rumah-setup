@@ -1,6 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect} from "react";
+import { useParams, Link } from "react-router-dom";
+import ProductCard from "../components/Productcard";
+import ReactImageMagnify from "react-image-magnify";
+import { Icon } from "@iconify/react/dist/iconify.js";
+import {useCart} from "./Cartdetail"
 
 const ProductPage = () => {
+  const { id } = useParams(); 
   const [product, setProduct] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -9,16 +15,19 @@ const ProductPage = () => {
 
   useEffect(() => {
     const fetchProductData = async () => {
+      setLoading(true);
       try {
-        // Assuming we're fetching a product with ID 1
-        const productResponse = await fetch('http://localhost:5000/api/products/2');
+        const productResponse = await fetch(`http://localhost:5000/api/products/${id}`);
         const productData = await productResponse.json();
         setProduct(productData);
-        
-        // Fetch related products
+
         const relatedResponse = await fetch('http://localhost:5000/api/products/');
-        const relatedData = await relatedResponse.json();
-        setRelatedProducts(relatedData);
+        // Filter produk yang terkait (misalnya, produk dengan kategori yang sama)
+        const allProducts = await relatedResponse.json();
+        const related = allProducts
+          .filter(item => item.id !== productData.id)
+          .slice(0, 4); // Batasi hanya 4 produk terkait
+        setRelatedProducts(related);
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -26,35 +35,21 @@ const ProductPage = () => {
       }
     };
 
-    fetchProductData();
-  }, []);
+    if (id) {
+      fetchProductData();
+    }
+  }, [id]); 
 
-  const addToCart = () => {
-    alert(`Added ${quantity} of ${product.title} to cart!`);
-  };
-
+   const { addToCart } = useCart();   
+    // <<< panggil hook di sini 
   const buyNow = () => {
-    alert(`Proceeding to checkout with ${quantity} of ${product.title}!`);
+    alert(`Proceeding to checkout with ${quantity} of ${product.title || product.name}!`);
   };
 
+  // Gunakan komponen ProductCard untuk produk terkait
   const RelatedProductCard = ({ product }) => {
     return (
-      <div className="border border-gray-200 rounded-md overflow-hidden">
-        <div className="relative">
-          <img 
-            src={product.image} 
-            alt={product.title} 
-            className="w-full h-48 object-contain p-2" 
-          />
-        </div>
-        <div className="p-3">
-          <h3 className="text-sm font-medium text-gray-800 line-clamp-2">{product.title}</h3>
-          <div className="mt-2 flex flex-col">
-            <span className="text-gray-400 line-through text-sm">{(product.price * 1.2).toLocaleString('id-ID')}</span>
-            <span className="font-bold">{product.price.toLocaleString('id-ID')}</span>
-          </div>
-        </div>
-      </div>
+      <ProductCard product={product} />
     );
   };
 
@@ -67,21 +62,30 @@ const ProductPage = () => {
   }
 
   const thumbnails = [
-    product.image,
-    "/api/placeholder/400/400",
-    "/api/placeholder/400/400",
-    "/api/placeholder/400/400"
+    product.image || product.imageUrl,
+    // Tambahkan gambar lain jika ada
   ];
 
   return (
-    <div className="max-w-6xl mx-auto px-4">
+    <div className="max-w-6xl mx-auto px-4 font-helvetica-light">
+      {/* Breadcrumb */}
+      <div className="py-4">
+        <nav className="flex text-sm">
+          <Link to="/" className="text-gray-500 hover:text-black">Home</Link>
+          <span className="mx-2 text-gray-500">/</span>
+          <Link to="/products" className="text-gray-500 hover:text-black">Products</Link>
+          <span className="mx-2 text-gray-500">/</span>
+          <span className="text-black truncate">{product.title || product.name}</span>
+        </nav>
+      </div>
+
       <div className="flex flex-col md:flex-row gap-8 py-8">
         {/* Left - Images */}
         <div className="md:w-1/2">
           <div className="flex">
             <div className="flex flex-col gap-4 mr-4">
               {thumbnails.map((thumb, index) => (
-                <div 
+                <div
                   key={index}
                   onClick={() => setSelectedImage(index)}
                   className={`border w-16 h-16 cursor-pointer ${selectedImage === index ? 'border-black' : 'border-gray-200'}`}
@@ -92,16 +96,36 @@ const ProductPage = () => {
             </div>
 
             <div className="flex-1 border border-gray-200">
-              <img src={thumbnails[selectedImage]} alt={product.title} className="w-full h-auto object-contain p-4" />
+              <div id="imageMagnifyer">
+                {thumbnails[selectedImage] && (
+                  <ReactImageMagnify
+                    {...{
+                      smallImage: {
+                        alt: product.title || product.name,
+                        isFluidWidth: true,
+                        src: thumbnails[selectedImage],
+                      },
+                      largeImage: {
+                        src: thumbnails[selectedImage],
+                        width: 1500,
+                        height: 1800,
+                      },
+                      isHintEnabled: true,
+                      shouldHideHintAfterFirstActivation: false,
+                      hintTextMouse: "Hover to zoom",
+                    }}
+                  />
+                )}
+              </div>
             </div>
           </div>
         </div>
 
         {/* Right - Detail */}
         <div className="md:w-1/2">
-          <h1 className="text-3xl font-bold mb-4">{product.title}</h1>
+          <h1 className="text-3xl font-bold mb-4 font-ag-futura">{product.title || product.name}</h1>
           <div className="mb-4">
-            <span className="text-2xl font-bold">{product.price.toLocaleString('id-ID')} IDR</span>
+            <span className="text-2xl font-bold">{product.price?.toLocaleString()} IDR</span>
           </div>
           <div className="mb-4">
             <p className="text-gray-700">Stok: {product.stock || 'Available'}</p>
@@ -132,7 +156,7 @@ const ProductPage = () => {
             </button>
             <button 
               className="w-full py-3 bg-black text-white font-medium rounded hover:bg-gray-800"
-              onClick={addToCart}
+               onClick={() => addToCart(product)}
             >
               Add to cart
             </button>
@@ -141,13 +165,7 @@ const ProductPage = () => {
           {/* Share */}
           <div className="mt-6">
             <button className="inline-flex items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
-                <circle cx="18" cy="5" r="3"></circle>
-                <circle cx="6" cy="12" r="3"></circle>
-                <circle cx="18" cy="19" r="3"></circle>
-                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-              </svg>
+              <Icon icon="solar:share-bold" className="w-5 h-5 mr-2" />
               Share
             </button>
           </div>
@@ -163,7 +181,7 @@ const ProductPage = () => {
         <h2 className="text-xl font-semibold mb-4">Spesifikasi Produk</h2>
         <div className="text-gray-600">
           <p>Category: {product.category}</p>
-          <p>Rating: {product.rating?.rate} out of 5 ({product.rating?.count} reviews)</p>
+          <p>Rating: {product.rating?.rate || '4.5'} out of 5 ({product.rating?.count || '10'} reviews)</p>
         </div>
       </div>
 
@@ -171,7 +189,7 @@ const ProductPage = () => {
         <h2 className="text-xl font-semibold my-4">Produk Terkait</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {relatedProducts.map(product => (
-            <RelatedProductCard key={product.id} product={product} />
+            <RelatedProductCard key={product.id || product._id} product={product} />
           ))}
         </div>
       </div>

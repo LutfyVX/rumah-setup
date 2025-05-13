@@ -1,6 +1,5 @@
 import React from 'react';
 import { useState } from 'react';
-import Navbar  from '../components/Navbar';
 import { Icon } from '@iconify/react';
 
 
@@ -15,11 +14,7 @@ const Register = () => {
     return (
         <div className="">
 
-            {/* Navigation */}
-            <nav className="">
-           <Navbar/>
-            </nav>
-
+    
             {/* Keyboard Image Banner */}
             <div
             className="w-full h-20 md:h-24 bg-cover bg-center"

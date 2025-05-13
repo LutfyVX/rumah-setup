@@ -1,17 +1,22 @@
 import React, { useState } from "react";
 import { Icon } from "@iconify/react";
 import { Link } from 'react-router-dom';
+import {useCart} from './Cartdetail'
 
 
 export default function Navbar() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const {cartItems} = useCart();
+
+  const totalQuantity = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
   const navItems = (
     <>
       <Link to="/" className="hover:underline">
       Home
     </Link>
-      <a href="#" className="hover:underline">
+      <a href="#nigga" className="hover:underline">
         Produk
       </a>
       <a href="#" className="hover:underline">
@@ -61,11 +66,11 @@ export default function Navbar() {
 
           {/* Cart */}
           <div className="relative">
-            <Icon
-              icon="material-symbols-light:shopping-bag-outline" width={24} height={30}
-            />
+            <Link to="/Cart">
+              <Icon icon="material-symbols-light:shopping-bag-outline" width={24} height={30} />
+            </Link>
             <span className="absolute -top-3 -right-3 bg-blue-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-              1
+               {totalQuantity}
             </span>
           </div>
 

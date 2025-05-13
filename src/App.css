@@ -1,1 +1,6 @@
 @import "tailwindcss";
+
+#imageMagnifyer {
+    width: 100%;
+    height: 100%;
+}
